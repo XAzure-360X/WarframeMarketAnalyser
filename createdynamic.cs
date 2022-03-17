@@ -6,6 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Reflection;
+
 namespace TestApp
 {
     public class Result
@@ -36,10 +38,14 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            string jsonString = File.ReadAllText(@"C:/Users\zaid2/desktop/staticresult.txt");
+            string uri = "https://api.warframe.market/items/";
+            string filePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
+            Console.WriteLine(filePath);
+            //string jsonString = File.ReadAllText(@"C:/Users\zaid2/desktop/staticresult.txt");
+            string jsonString = File.ReadAllText(@$"{filePath}/staticresult.txt");
             Result res = JsonSerializer.Deserialize<Result>(jsonString);
             List<Item> itemList = res.payload.items;
-            string uri = "https://api.warframe.market/items/";
+            
             List<string> itemUris = new List<string>();
             foreach (Item item in itemList)
             {
@@ -49,7 +55,7 @@ namespace TestApp
                 //get the json for each itemUri
             }
             Console.WriteLine(itemUris[0]);
-            try()
+            //try()
            /* foreach (string itemUri in itemUris)
             {
                 string orderspayload = getJson(itemUri);
