@@ -6,8 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Reflection;
-
+using System.Linq;
 namespace TestApp
 {
     public class Result
@@ -18,10 +17,7 @@ namespace TestApp
     {
         public List<Item> items { get; set; }
     }
-    public class PayloadOrders
-    {
-        public List<Orders> orders { get; set; }
-    }
+
     public class Item
     {
         public string url_name { get; set; }
@@ -29,23 +25,50 @@ namespace TestApp
         public string id { get; set; }
         public string thumb { get; set; }
     }
+
+    public class PayloadOrders
+    {
+        public Orders payload { get; set;}
+    }
+
     public class Orders
     {
-        public string platinum { get; set; }
-        public string quantity { get; set; }
+        public List<Order> orders { get; set; }
     }
+    public class Order
+    {
+        public int quantity { get; set; }
+        public int platinum { get; set; }
+    }
+    public class ItemOutput
+    {
+        public ItemOutput(string uri,List<Order> orders)
+        {
+            Orders = orders;
+            Uri = uri;
+        }
+        public List<Order> Orders { get; set; }
+        public string Uri { get; set;}
+    }
+    public class ItemsOutput
+    {
+        public List<ItemOutput> Items { get; set; }
+    }
+    public class ItemOrderOutput
+    {
+        public int platinum { get; set; }
+        public int quantity { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            string uri = "https://api.warframe.market/items/";
-            string filePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
-            Console.WriteLine(filePath);
-            //string jsonString = File.ReadAllText(@"C:/Users\zaid2/desktop/staticresult.txt");
-            string jsonString = File.ReadAllText(@$"{filePath}/staticresult.txt");
+            List<ItemOutput> items = new List<ItemOutput>();
+            string jsonString = File.ReadAllText(@"./staticcrap/staticresult.txt");
             Result res = JsonSerializer.Deserialize<Result>(jsonString);
             List<Item> itemList = res.payload.items;
-            
+            string uri = "https://api.warframe.market/v1/items/";
             List<string> itemUris = new List<string>();
             foreach (Item item in itemList)
             {
@@ -54,12 +77,26 @@ namespace TestApp
                 itemUris.Add(itemUri);
                 //get the json for each itemUri
             }
-            Console.WriteLine(itemUris[0]);
-            //try()
-           /* foreach (string itemUri in itemUris)
+            
+                PayloadOrders orderspayload = JsonSerializer.Deserialize<PayloadOrders>(getJson(itemUris[0]));
+                List<Order> orders = orderspayload.payload.orders;
+                ItemOutput itemOutput = new ItemOutput(uri, orderspayload.payload.orders);
+                items.Add(itemOutput);
+
+            ItemsOutput finalitems = new ItemsOutput
             {
-                string orderspayload = getJson(itemUri);
-            }*/
+                Items = items,
+                
+            };
+            string finaloutput = JsonSerializer.Serialize(finalitems);
+            File.WriteAllText(@"./staticcrap/output.json", finaloutput);
+            // {item_url} platinum: 'n', quantity: 'y'
+
+            /* try()
+             foreach (string itemUri in itemUris)
+             {
+                 string orderspayload = getJson(itemUri);
+             }*/
         }
         public static string getJson(string url_items)
         {
@@ -80,3 +117,7 @@ namespace TestApp
         }*/
     }
 }
+
+//lets push on git i have an idea
+//nope too many people
+
